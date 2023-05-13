@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package qa.v1;
+
+option go_package = "test-analysis/api/qa/v1;v1";
+
+
+service Search {
+  rpc SearchQuestion (SearchQuestionRequest) returns (SearchQuestionReply) {}
+}
+
+message SearchQuestionRequest {
+  int64 agentId = 1 [ json_name = "agentId" ];
+  string question = 2 [ json_name = "question" ];
+  repeated string qgroupId = 3 [ json_name = "qgroupId" ];
+  int64 size = 4 [ json_name = "size" ];
+  EntityFilter filter = 5 [ json_name = "filter" ];
+}
+
+message EntityFilter {
+  bool search = 1 [ json_name = "search" ];
+  bool filter = 2 [ json_name = "filter" ];
+}
+
+message SearchQuestionReply {
+  int64 code = 1 [ json_name = "code" ];
+  string message = 2 [ json_name = "message" ];
+  repeated Ques questions = 3 [ json_name = "questions" ];
+}
+
+message Ques {
+  string qgroupId = 1 [ json_name = "qgroupId" ];
+  string question = 2 [ json_name = "question" ];
+  double score = 3 [ json_name = "score" ];
+}

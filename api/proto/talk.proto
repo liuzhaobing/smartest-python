@@ -1,0 +1,211 @@
+syntax = "proto3";
+
+package svpb;
+
+import "google/protobuf/struct.proto";
+//import "google/api/annotations.proto";
+
+enum EventType {
+  Text        = 0; // 普通文本请求
+  Boot        = 1; // 开机
+  FaceIn      = 2; // 人脸进入
+  FaceStay    = 3; // 人脸停留
+  FaceLeave   = 4; // 人脸离开
+  Multimodal  = 5; // 多模态信息
+}
+
+message TalkRequest {
+  // 消息是否完整
+  bool is_full                  = 1 [json_name="isfull"];
+  // 语音识别文本信息
+  Asr asr                       = 2 ;
+  // 应用ID
+  int64 agent_id                = 3 [json_name="agentid"];
+  // 会话ID
+  string session_id             = 4 [json_name="sessionid"];
+  // 请求ID，每个请求唯一
+  string question_id            = 5 [json_name="questionid"];
+  // 事件类型
+  EventType event_type          = 6 [json_name="eventtype"];
+  /*
+  环境信息，如人脸、设备等
+  如果有多模态则如下格式
+  multiEvent 格式：
+  event_info: {
+    "multiEvent": `{
+    "event": [{
+          "event_type": 1,
+          "event_descrip": "EVENT_TYPE_ZHAOHU",
+          "event_time": "2022-06-17 14:01:41.000",
+          "timestamp": "1655445701232",
+          "event_info": {}
+        },
+        {
+          "event_type": 4,
+          "event_descrip": "EVENT_TYPE_ASR",
+          "event_time": "2022-06-17 14:25:04.000",
+          "timestamp": "1655447104000",
+          "event_info": {
+            "asr": "hello",
+            "end": false
+          }
+        }
+      ],
+      "user_info": {
+        "person_id": 0,
+        "name": "david",
+        "age": 30,
+        "gender": 1
+      }
+    }`
+  }
+  */
+  map<string, string> env_info  = 7 [json_name="envinfo"];
+  // 机器人逻辑ID
+  string robot_id               = 8 [json_name="robotid"];
+  // 租户
+  string tenant_code            = 9 [json_name="tenantcode"];
+  // 机器人所在位置。格式：经度;纬度
+  string position               = 10;
+  // HARI 版本，包括 v2，v3
+  string version                = 11;
+  // 意图识别的上下文
+  string inputContext           = 12;
+  // 是否坐席触发
+  bool is_ha                    = 13 [json_name="is_ha"];
+  // 是否测试模式
+  bool test_mode                = 14 [json_name="testMode"];
+}
+
+message TalkResponse {
+  // 语音识别结果类型
+  string source                     = 1;
+  // 语音识别文本信息
+  Asr asr                           = 2;
+  .google.protobuf.Struct operation = 3;
+  // 当前回答是否可信
+  bool is_credible                  = 4 [json_name="iscredible"];
+  // 当前回答自信度
+  double confidence                 = 5;
+  // 回答内容
+  repeated AnsItem tts              = 6;
+  // 标签信息
+  repeated string tags              = 7;
+  // QA推荐答案
+  repeated AnsItem recomendation    = 8 ;
+  // 相似问题
+  repeated string simqs             = 9;
+  // gateway 透传字段
+  .google.protobuf.Struct gw_data   = 10 [json_name="gwdata"];
+  // 多轮会话下一个分支树
+  Tree tree                         = 11 ;
+  // 会话超时字段
+  int64 expiration                  = 12;
+  // 请求耗时
+  int64 cost                        = 13 [json_name="thirdCost"];
+  // 日志字段，smartvoice 自己使用
+  .google.protobuf.Struct hit_log   = 14 [json_name="hitlog"];
+  // 调试日志，smartvoice自己使用
+  repeated HitLogDebug debug_list   = 15 [json_name="debugList"];
+  string question_id                = 16 [json_name="questionid"];
+  Emotion emotion                   = 17 [json_name="emotion"];
+
+  //多模态返回信息，如果此字段不为空， 前面返回的tts将不会执行
+  string action_content    = 18;
+}
+
+message Emotion {
+  // 用户输入文本的情感：高兴(happy), 失望悲伤（disappointed），愤怒(angry)和无明显情绪（none）
+  string name   = 1;
+  // 情感执行度
+  double score  = 2;
+}
+
+message Asr {
+  // 语音识别结果
+  string lang = 1;
+  // 识别语音，由Hari传入，包括：CH、TCH、EN、JA、ES
+  string text = 2;
+}
+
+message  AnsItem {
+  // 回答内容
+  string text     = 1;
+  // 回答语言
+  string lang     = 2;
+  // tts需要操作类型
+  string type     = 3;
+  // RCU 端执行对象
+  Action action   = 4;
+  // 表情字段
+  string emoji    = 5;
+  // 业务扩展字段
+  string payload  = 6;
+  //sv返回的下文
+  string outcontext =7;
+}
+
+message Action {
+  // action名，RCU执行范畴
+  string name         = 1;
+  // 用户RCU显示的识别串，具体枚举值由各业务模块定义
+  string display      = 2;
+  ActionParam param   = 3;
+}
+
+message ActionParam {
+  double duration                   = 1;
+  // 音频文件URL
+  string url                        = 2;
+  // 图片文件URL
+  string pic_url                    = 3 [json_name="pic_url"];
+  // 视频文件URL
+  string video_url                  = 4 [json_name="video_url"];
+  // 意图名称
+  string intent                     = 5;
+  // 意图参数
+  map<string, string> params        = 6;
+  // 给rcu处理的原始数据json字符串
+  .google.protobuf.Value raw_data   = 7 [json_name="raw_data"];
+  // 序号，从0开始
+  int32 frame_no                    = 8 [json_name="frame_no"];
+  // 类型，目前支持：voicepad（垫片）、tts（正文）
+  string play_type                  = 9 [json_name="play_type"];
+  string guide_tip                  = 10 [json_name="guide_tip"];
+  // 领域名称
+  string domain                     = 11;
+  // extra params
+  map<string,string> extra_params   = 12 [json_name="extra_params"];
+}
+
+message Tree {
+  string current_state          = 1;
+  repeated SubTreeItem sub_tree = 2;
+}
+
+message SubTreeItem {
+  string state    = 1;
+  string template = 2;
+}
+
+message HitLogDebug {
+  string source         = 1;
+  int64 domain_id       = 2;
+  string domain         = 3;
+  int64 intent_id       = 4;
+  string intent         = 5;
+  string in_context     = 6;
+  string out_context    = 7;
+  string response       = 8;
+  string time           = 9;
+  string supplier       = 10;
+  string supplier_type  = 11;
+  int64 cost            = 12;
+  string algo           = 13;
+  map<string, string> parameters = 14;
+}
+
+service Talk {  
+  rpc StreamingTalk(stream TalkRequest) returns (stream TalkResponse) {};
+  rpc Talk(TalkRequest) returns (TalkResponse) {};
+}

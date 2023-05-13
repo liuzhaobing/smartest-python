@@ -1,0 +1,84 @@
+syntax = "proto3";
+
+package qqsim.v1;
+
+import "google/protobuf/empty.proto";
+
+option go_package = "nlp-qqsim-server/api/qqsim/v1;v1";
+
+
+service QqsimService {
+   rpc CmQqSimSimilar(CmQsimSimilarRequest ) returns (CmQsimSimilarResponse){};
+   rpc CmQqSimSentenceEncode(CmQqSimSentenceRequest) returns(CmQqSimSentenceResponse){};
+   rpc GetQqsimVersion(google.protobuf.Empty) returns (VersionResponse){};
+}
+
+message CmQsimSimilarRequest {
+  int32 agent_id = 1 [ json_name = "agent_id" ];
+  string trace_id = 2 [ json_name = "trace_id" ];
+  string robot_name = 3 [ json_name = "RobotName" ];
+  repeated TextPairReqMsg texts = 4;
+}
+
+message CmQqSimSentenceRequest {
+  int32 agent_id = 1;
+  string trace_id = 2;
+  string robot_name = 3;
+  repeated string text_list = 4;
+}
+
+message CmQqSimSentenceResponse {
+  int32  code = 1;
+  string reason =2;
+  string message = 3;
+  QqSimSentenceResult metadata = 4;
+}
+
+message QqSimSentenceResult {
+  string modelType = 1;
+  string version = 2;
+  message VectorList{
+    repeated float vector = 1;
+  }
+  repeated  VectorList vectorList =3;
+}
+
+
+message TextPairReqMsg {
+  int32  id = 1 ;
+  string text_1 = 2 [ json_name = "text_1" ];
+  string text_2 = 3 [ json_name = "text_2" ];
+  float es_score = 4 [ json_name = "es_score" ];
+
+}
+
+message CmQsimSimilarResponse {
+    int32  code = 1;
+    string reason =2;
+    string message = 3;
+    QsimSimilarResult metadata = 4;
+}
+
+message QsimSimilarResult{
+    string modelType = 1;
+    string version = 2;
+    repeated TextPairRspMsg answers =3;
+}
+
+message TextPairRspMsg {
+    int32  id = 1;
+    string text_1 = 2;
+    string text_2 = 3;
+    float  score = 4;
+}
+
+message VersionResponse{
+  string version = 1;
+}
+
+enum ModelType{
+    MODEL_TYPE_768 = 0;
+    MODEL_TYPE_512 = 1;
+    MODEL_TYPE_256 = 2;
+    MODEL_TYPE_128 = 3;
+}

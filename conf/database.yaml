@@ -1,0 +1,35 @@
+default:
+  ENGINE: django.db.backends.mysql
+  NAME: admin
+  HOST: 172.16.23.33
+  PORT: 3306
+  USER: root
+  PASSWORD: ""
+
+smartest_mysql:
+  ENGINE: django.db.backends.mysql
+  NAME: nlpautotest
+  HOST: 172.16.23.33
+  PORT: 3306
+  USER: root
+  PASSWORD: ""
+
+smartest_mongo:
+  ENGINE: djongo
+  NAME: smartest
+  ENFORCE_SCHEMA: false
+  CLIENT:
+    host: 172.16.23.33
+    port: 27927
+    username: root
+    password: "123456"
+    authSource: admin
+    authMechanism: SCRAM-SHA-256
+
+smartvoice_cms_mysql:
+  ENGINE: django.db.backends.mysql
+  NAME: kbs_cms
+  HOST: 172.16.13.134
+  PORT: 31145
+  USER: bigdata_sync
+  PASSWORD: 1qaz@WSX
