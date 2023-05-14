@@ -80,15 +80,16 @@ class TalkGRPC:
 
 
 class StreamTalkGRPC(TalkGRPC):
+    @staticmethod
+    def yield_message(message):
+        yield message
 
     def talk(self, *args, **kwargs):
-        def yield_message(message):
-            yield message
 
         req = self.talk_request(*args, **kwargs)
         logging.info(json_format.MessageToDict(req))
         try:
-            responses = self.stub.StreamingTalk(yield_message(req))
+            responses = self.stub.StreamingTalk(self.yield_message(req))
             responses_json = [json_format.MessageToDict(response) for response in responses]
             logging.info(responses_json)
             return responses_json
@@ -102,4 +103,4 @@ if __name__ == '__main__':
     talk_result = talk(text="现在几点了", agent_id=666)
 
     stream_talk = StreamTalkGRPC(address="172.16.23.85:30811")
-    stream_talk_result = stream_talk(text="现在几点了", agent_id=666)
+    stream_talk_result = stream_talk(text="介绍一下马斯克", agent_id=1740)
