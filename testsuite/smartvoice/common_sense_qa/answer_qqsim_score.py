@@ -24,34 +24,7 @@ def get_score(sentence1, sentence2):
         return 0
 
 
-if __name__ == '__main__':
-    """直接从mongo库里拉数据"""
-    job_instance_id = "d6d9faad-9255-4c59-aae3-cfd5f323b674"
-    test_results = qa_results_col.find({"job_instance_id": job_instance_id})
-    test_results = list(test_results)
-
-
-    def get_row_max_score(args):
-        exp = args["exp_answer"]
-        if not isinstance(exp, str):
-            args["answer_qqsim_score"] = 0
-            return args
-
-        exp_list = exp.split("&&")
-
-        act_answer = args["act_answer"]
-        scores = []
-        for exp_answer in exp_list:
-            score = get_score(act_answer, exp_answer)
-            scores.append(score)
-        args["answer_qqsim_score"] = max(scores)
-        return args
-
-
-    results = util.util.runner(get_row_max_score, test_results, threads=6)
-    util.util.save_data_to_xlsx(results, os.path.join(DATA_DIR, f"{job_instance_id}_{util.util.time_strf_now()}.xlsx"))
-
-if __name__ == '__main__':
+if __name__ != '__main__':
     """从excel中读取数据"""
     filename = os.path.join(DATA_DIR, "common_sense_qa融合RobotGPT效果测试.xlsx")
     sheet_names = [
@@ -82,3 +55,30 @@ if __name__ == '__main__':
         data = util.util.load_data_from_xlsx(filename, sheet_name=sheet)
         results = util.util.runner(get_row_max_score, data, threads=5)
         util.util.save_data_to_xlsx(results, os.path.join(DATA_DIR, f"{sheet}_{util.util.time_strf_now()}.xlsx"))
+
+if __name__ == '__main__':
+    """直接从mongo库里拉数据"""
+    job_instance_id = "d6d9faad-9255-4c59-aae3-cfd5f323b674"
+    test_results = qa_results_col.find({"job_instance_id": job_instance_id})
+    test_results = list(test_results)
+
+
+    def get_row_max_score(args):
+        exp = args["exp_answer"]
+        if not isinstance(exp, str):
+            args["answer_qqsim_score"] = 0
+            return args
+
+        exp_list = exp.split("&&")
+
+        act_answer = args["act_answer"]
+        scores = []
+        for exp_answer in exp_list:
+            score = get_score(act_answer, exp_answer)
+            scores.append(score)
+        args["answer_qqsim_score"] = max(scores)
+        return args
+
+
+    results = util.util.runner(get_row_max_score, test_results, threads=6)
+    util.util.save_data_to_xlsx(results, os.path.join(DATA_DIR, f"{job_instance_id}_{util.util.time_strf_now()}.xlsx"))
