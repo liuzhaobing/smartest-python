@@ -50,7 +50,7 @@ def check_task_running(job_instance_id: str):
     return False
 
 
-if __name__ == '__main__':
+if __name__ != '__main__':
     job_instance_id = "34af0e39-becb-43eb-974c-9a609796ff8c"
     final_results = []
     while True:
@@ -64,3 +64,34 @@ if __name__ == '__main__':
             break
         print("running...", len(final_results))
         sleep(300)
+
+if __name__ == '__main__':
+    filename = os.path.join(DATA_DIR, "common_sense_qa融合RobotGPT效果测试.xlsx")
+    sheet_names = [
+        # "已训练过的QA数据",
+        # "达闼集团相关的QA数据",
+        "通用库随机QA数据"
+    ]
+
+
+    def get_row_max_score(args):
+        exp = args["期望回复"]
+        if not isinstance(exp, str):
+            args["robot_gpt_qqsim_score"] = 0
+            return args
+
+        exp_list = exp.split("&&")
+
+        act_answer = args["实际回复"]
+        scores = []
+        for exp_answer in exp_list:
+            score = get_score(act_answer, exp_answer)
+            scores.append(score)
+        args["robot_gpt_qqsim_score"] = max(scores)
+        return args
+
+
+    for sheet in sheet_names:
+        data = util.util.load_data_from_xlsx(filename, sheet_name=sheet)
+        results = util.util.runner(get_row_max_score, data, threads=5)
+        util.util.save_data_to_xlsx(results, os.path.join(DATA_DIR, f"{sheet}_{util.util.time_strf_now()}.xlsx"))

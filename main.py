@@ -1,6 +1,8 @@
 # This is a sample Python script.
 import os.path
 import logging.config
+from queue import Queue
+
 import yaml
 
 BASE_DIR = os.path.dirname(__file__)
@@ -10,6 +12,9 @@ os.makedirs(LOG_DIR, exist_ok=True)
 os.makedirs(DATA_DIR, exist_ok=True)
 DATABASE_CONFIG_FILE = os.path.join(BASE_DIR, "conf", "database.yaml")
 DATABASE_CONFIG = yaml.load(open(DATABASE_CONFIG_FILE, "r", encoding="UTF-8"), Loader=yaml.FullLoader)
+ROBOT_IDS = Queue()
+for r in open(os.path.join(DATA_DIR, "robot_id.txt"), "r", encoding="UTF-8").readlines():
+    ROBOT_IDS.put(r.strip())
 
 logging.config.dictConfig(
     {

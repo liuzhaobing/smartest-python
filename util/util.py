@@ -107,6 +107,7 @@ def save_data_to_xlsx(data: list[dict], filename: str, **kwargs):
         | 3    | 后面的那几个机器人是你的朋友吗 | 那坏人是你的朋友吗       |
         | 4    | 后面的那几个机器人是你的朋友吗 | 你们的朋友都是机器人吗   |
     """
+    logging.info(f"Logged {len(data)} rows of data to {filename}")
     return pd.DataFrame(data).to_excel(excel_writer=filename, index=False, **kwargs)
 
 
